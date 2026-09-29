@@ -6,9 +6,13 @@ const getAll = () => [...tasks];
 
 const findById = (id) => tasks.find((t) => t.id === id);
 
+
+// KNOWN BUG-2: .includes() does partial matching ("do" matches "todo" and "done"). See BUG_REPORT.md.
 const getByStatus = (status) => tasks.filter((t) => t.status.includes(status));
 
 const getPaginated = (page, limit) => {
+  // FIX (BUG-1): pages are 1-based, so page 1 must start at offset 0.
+  // The original `page * limit` skipped the first page. See BUG_REPORT.md.
   const offset = (page - 1) * limit;
   return tasks.slice(offset, offset + limit);
 };
@@ -43,6 +47,8 @@ const create = ({ title, description = '', status = 'todo', priority = 'medium',
   return task;
 };
 
+
+// KNOWN BUG-4: spreading `fields` lets the client overwrite id/createdAt. See BUG_REPORT.md.
 const update = (id, fields) => {
   const index = tasks.findIndex((t) => t.id === id);
   if (index === -1) return null;
@@ -66,6 +72,9 @@ const completeTask = (id) => {
 
   const updated = {
     ...task,
+    
+    // KNOWN BUG-3: this resets the priority. See BUG_REPORT.md.
+
     priority: 'medium',
     status: 'done',
     completedAt: new Date().toISOString(),
@@ -76,6 +85,9 @@ const completeTask = (id) => {
   return updated;
 };
 
+
+// Assigns a task to a person. Re-assigning is allowed (overwrites the old assignee).
+// The name is trimmed so "  Ravi  " is stored as "Ravi". Validation lives in validators.js.
 const assignTask = (id, assignee) => {
   const index = tasks.findIndex((t) => t.id === id);
   if (index === -1) return null;

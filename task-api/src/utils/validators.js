@@ -33,4 +33,20 @@ const validateUpdateTask = (body) => {
   return null;
 };
 
-module.exports = { validateCreateTask, validateUpdateTask };
+const MAX_ASSIGNEE_LENGTH = 100;
+
+const validateAssignTask = (body) => {
+  if (!body || typeof body.assignee !== 'string') {
+    return 'assignee is required and must be a string';
+  }
+  const name = body.assignee.trim();
+  if (name === '') {
+    return 'assignee must be a non-empty string';
+  }
+  if (name.length > MAX_ASSIGNEE_LENGTH) {
+    return `assignee must be at most ${MAX_ASSIGNEE_LENGTH} characters`;
+  }
+  return null;
+};
+
+module.exports = { validateCreateTask, validateUpdateTask, validateAssignTask };
